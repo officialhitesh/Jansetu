@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JanSetu — Admin Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<script src="../assets/js/api.js"></script>
+<style>
+  :root {
+    --navy: #0f1f3d; --dark: #080f1e; --saffron: #f4880a;
+    --saffron-light: #ffa63d; --white: #f8f6f1; --muted: #8a9ab5;
+    --card-bg: #101c38; --border: rgba(244,136,10,0.2);
+    --input-bg: #080f1e;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif; background: var(--dark); color: var(--white);
+    min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr;
+  }
+
+  /* Left panel */
+  .left {
+    background: var(--navy);
+    display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+    padding: 4rem;
+    position: relative; overflow: hidden;
+    border-right: 1px solid var(--border);
+  }
+  .left::before {
+    content: '';
+    position: absolute; bottom: -80px; right: -80px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(244,136,10,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .left-badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    background: rgba(224,82,82,0.12); border: 1px solid rgba(224,82,82,0.3);
+    color: #f08080; padding: .3rem .9rem; border-radius: 20px;
+    font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    margin-bottom: 2rem;
+  }
+  .left h2 { font-family: 'Crimson Pro', serif; font-size: 2.8rem; font-weight: 700; line-height: 1.1; margin-bottom: 1rem; }
+  .left h2 span { color: var(--saffron); }
+  .left p { color: var(--muted); line-height: 1.7; max-width: 340px; }
+
+  .feature-list { margin-top: 2.5rem; display: flex; flex-direction: column; gap: .75rem; }
+  .feature-item {
+    display: flex; align-items: center; gap: .75rem;
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 8px; padding: .65rem 1rem; font-size: .85rem;
+  }
+  .feature-item .f-icon { font-size: 1.1rem; }
+  .feature-item span { color: var(--muted); }
+  .feature-item strong { color: var(--white); }
+
+  /* Right panel */
+  .right {
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 3rem 2.5rem;
+    background: var(--dark);
+  }
+  .form-box { width: 100%; max-width: 380px; }
+
+  .brand { display: flex; align-items: center; gap: .75rem; margin-bottom: 2.5rem; }
+  .brand-icon { width: 40px; height: 40px; background: var(--saffron); border-radius: 9px; display: grid; place-items: center; font-size: 1.2rem; }
+  .brand-name { font-family: 'Crimson Pro', serif; font-size: 1.5rem; font-weight: 700; }
+  .brand-name span { color: var(--saffron); }
+
+  h3 { font-family: 'Crimson Pro', serif; font-size: 1.8rem; font-weight: 700; margin-bottom: .4rem; }
+  .subtitle { color: var(--muted); font-size: .875rem; margin-bottom: 2rem; line-height: 1.5; }
+
+  .field { margin-bottom: 1.1rem; }
+  label { display: block; font-size: .79rem; font-weight: 600; color: var(--muted); margin-bottom: .4rem; letter-spacing: .05em; text-transform: uppercase; }
+  input {
+    width: 100%; padding: .7rem .95rem;
+    background: var(--input-bg); border: 1.5px solid rgba(255,255,255,0.07);
+    border-radius: 8px; color: var(--white);
+    font-family: 'DM Sans', sans-serif; font-size: .93rem;
+    transition: border-color .2s, box-shadow .2s; outline: none;
+  }
+  input:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px rgba(244,136,10,0.1); }
+  input::placeholder { color: rgba(138,154,181,0.4); }
+
+  .btn-submit {
+    width: 100%; padding: .8rem;
+    background: var(--saffron); color: var(--navy);
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: .93rem; font-weight: 700;
+    cursor: pointer; transition: all .2s; margin-top: .5rem;
+  }
+  .btn-submit:hover { background: var(--saffron-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(244,136,10,0.3); }
+  .btn-submit:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+  .alert {
+    padding: .7rem 1rem; border-radius: 8px; font-size: .85rem;
+    margin-bottom: 1rem; display: none;
+  }
+  .alert.error { background: rgba(224,82,82,0.1); border: 1px solid rgba(224,82,82,0.3); color: #f08080; }
+  .alert.success { background: rgba(61,187,123,0.1); border: 1px solid rgba(61,187,123,0.3); color: #3dbb7b; }
+  .alert.show { display: block; }
+
+  .back-link { display: block; text-align: center; margin-top: 1.5rem; color: var(--muted); font-size: .83rem; text-decoration: none; }
+  .back-link:hover { color: var(--saffron); }
+
+  .spinner { display: inline-block; width: 13px; height: 13px; border: 2px solid var(--navy); border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; margin-right: .3rem; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 700px) {
+    body { grid-template-columns: 1fr; }
+    .left { display: none; }
+    .right { padding: 2rem 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Left -->
+<div class="left">
+  <div class="left-badge">🛡️ Admin Access Only</div>
+  <h2>Administration<br/>Control <span>Panel</span></h2>
+  <p>Manage all citizen complaints, assign resolutions, track departments, and view analytics across the portal.</p>
+  <div class="feature-list">
+    <div class="feature-item"><span class="f-icon">📋</span><div><strong>All Complaints</strong> <span>— View, filter, and update</span></div></div>
+    <div class="feature-item"><span class="f-icon">📊</span><div><strong>Analytics</strong> <span>— Charts, trends, department stats</span></div></div>
+    <div class="feature-item"><span class="f-icon">🤖</span><div><strong>AI Logs</strong> <span>— Review classification results</span></div></div>
+  </div>
+</div>
+
+<!-- Right -->
+<div class="right">
+  <div class="form-box">
+    <div class="brand">
+      <div class="brand-icon">🏛️</div>
+      <span class="brand-name">Jan<span>Setu</span></span>
+    </div>
+
+    <h3>Admin Sign In</h3>
+    <p class="subtitle">Enter your admin credentials to access the control panel.</p>
+
+    <div class="alert error" id="loginError"></div>
+    <div class="alert success" id="loginSuccess"></div>
+
+    <div class="field">
+      <label>Admin Email</label>
+      <input type="email" id="email" placeholder="admin@jansetu.gov.in"/>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn-submit" id="loginBtn" onclick="handleAdminLogin()">Access Admin Panel</button>
+    <a href="../index.html" class="back-link">← Back to citizen portal</a>
+  </div>
+</div>
+
+<script>
+// If already logged in as admin, redirect
+if (localStorage.getItem('access_token') && localStorage.getItem('user_role') === 'admin') {
+  window.location.href = 'dashboard.html';
+}
+
+function showAlert(id, msg, type = 'error') {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.className = `alert ${type} show`;
+  if (type === 'success') setTimeout(() => el.classList.remove('show'), 4000);
+}
+
+function setLoading(loading) {
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = loading;
+  btn.innerHTML = loading ? `<span class="spinner"></span>Signing in...` : 'Access Admin Panel';
+}
+
+async function handleAdminLogin() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) return showAlert('loginError', 'Please enter both email and password.');
+
+  setLoading(true);
+  try {
+    // Send role: "admin" so the backend can verify
+    const result = await apiRequest('/auth/login', 'POST', { email, password, role: 'admin' });
+
+    if (result.user.role !== 'admin') {
+      showAlert('loginError', 'Access denied. This account does not have admin privileges.');
+      return;
+    }
+
+    localStorage.setItem('access_token', result.access_token);
+    localStorage.setItem('user_role', result.user.role);
+    localStorage.setItem('user_name', result.user.full_name);
+
+    showAlert('loginSuccess', 'Welcome back! Redirecting...', 'success');
+    setTimeout(() => window.location.href = 'dashboard.html', 800);
+  } catch (err) {
+    showAlert('loginError', err.message || 'Login failed. Check your credentials.');
+  } finally {
+    setLoading(false);
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') handleAdminLogin(); });
+</script>
+</body>
+</html>
